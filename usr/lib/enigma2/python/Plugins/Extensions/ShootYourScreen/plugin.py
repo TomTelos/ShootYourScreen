@@ -1,7 +1,7 @@
 ###########################################
 # maintainer: <plnick@vuplus-support.org> #
-#    http://www.vuplus-support.org		  #
-##		   Modified by TomTelos			 ##
+#    http://www.vuplus-support.org        #
+##         Modified by TomTelos	         ##
 ###########################################
 
 #This plugin is free software, you are allowed to
