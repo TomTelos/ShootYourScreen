@@ -1,22 +1,33 @@
-﻿from Components.Language import language
 from Tools.Directories import resolveFilename, SCOPE_PLUGINS
-import os, gettext
 
-PluginLanguageDomain = "ShootYourScreen"
-PluginLanguagePath = "Extensions/ShootYourScreen/locale"
+PluginName = 'ShootYourScreen'
+PluginGroup = 'Extensions'
+PluginFolder = PluginName
+PluginPath = resolveFilename(SCOPE_PLUGINS, '%s/%s/' %(PluginGroup,PluginFolder))
+PluginLanguageDomain = "plugin-" + PluginName
+PluginLanguagePath = resolveFilename(SCOPE_PLUGINS, '%s/%s/locale' % (PluginGroup,PluginFolder))
 
-def localeInit():
-	lang = language.getLanguage()[:2]
-	os.environ["LANGUAGE"] = lang
-	print "[ShootYourScreen] set language to ", lang
-	gettext.bindtextdomain(PluginLanguageDomain, resolveFilename(SCOPE_PLUGINS, PluginLanguagePath))
+try:
+    from os import path
+    if path.exists(PluginLanguagePath):
+        raise ValueError('a hack :)')
+    from Components.LanguageGOS import gosgettext as _
+except:
+    from Components.Language import language
+    import gettext
+    from os import environ
 
-def _(txt):
-	t = gettext.dgettext(PluginLanguageDomain, txt)
-	if t == txt:
-		print "[ShootYourScreen] fallback to default Enigma2 Translation for", txt
-		t = gettext.gettext(txt)
-	return t
+    def localeInit():
+        lang = language.getLanguage()[:2]
+        environ["LANGUAGE"] = lang
+        gettext.bindtextdomain(PluginLanguageDomain, PluginLanguagePath)
 
-localeInit()
-language.addCallback(localeInit)
+    def _(txt):
+        t = gettext.dgettext(PluginLanguageDomain, txt)
+        if t == txt:
+                t = gettext.gettext(txt)
+        return t
+
+    localeInit()
+    language.addCallback(localeInit)
+

@@ -25,15 +25,17 @@ from time import localtime, time
 from os import system, path, mkdir, makedirs
 from __init__ import _
 
-pluginversion = "Version: 0.1-r5"
+pluginversion = "0.1.6"
 config.plugins.shootyourscreen = ConfigSubsection()
 config.plugins.shootyourscreen.enable = ConfigEnableDisable(default=True)
-config.plugins.shootyourscreen.switchtext = ConfigYesNo(default=True)
+config.plugins.shootyourscreen.switchhelp = ConfigYesNo(default=True)
 config.plugins.shootyourscreen.path = ConfigSelection(default = "/media/hdd", choices = [("/media/hdd"), ("/media/usb"), ("/media/hdd1"), ("/media/usb1"), ("/tmp", "/tmp")])
-config.plugins.shootyourscreen.pictureformat = ConfigSelection(default = "bmp", choices = [("bmp", "bmp"), ("-j", "jpg"), ("-p", "png")])
-config.plugins.shootyourscreen.jpegquality = ConfigSelection(default = "100", choices = [("10"), ("20"), ("40"), ("60"), ("80"), ("100")])
+config.plugins.shootyourscreen.pictureformat = ConfigSelection(default = "jpg", choices = [("bmp", "bmp"), ("-j", "jpg"), ("-p", "png")])
+config.plugins.shootyourscreen.jpegquality = ConfigSelection(default = "80", choices = [("10"), ("20"), ("40"), ("50"), ("60"), ("80"), ("100")])
 config.plugins.shootyourscreen.picturetype = ConfigSelection(default = "all", choices = [("all", "OSD + Video"), ("-v", "Video"), ("-o", "OSD")])
-config.plugins.shootyourscreen.picturesize = ConfigSelection(default = "default", choices = [("default", _("Skin resolution")), ("-r 480", "480"), ("-r 576", "576"), ("-r 720", "720"), ("-r 960", "960"), ("-r 1280", "1280"), ("-r 1920", "1920")])
+config.plugins.shootyourscreen.picturesize = ConfigSelection(default = "default", choices = [("default", _("Skin resolution")), ("-r 400", "400"), ("-r 480", "480"), ("-r 576", "576"), ("-r 720", "720"), ("-r 960", "960"), ("-r 1280", "1280"), ("-r 1920", "1920")])
+config.plugins.shootyourscreen.buttonchoice = ConfigSelection(default = "388", choices = [("113", _("Mute")), ("138", _("Help")), ("167", _("Record")), ("377", _("TV")), ("395", _("List")), ("388", _("Text")), ("392", _("Audio")), ("398", _("Red")), ("399", _("Green")), ("400", _("Yellow")), ("401", _("Blue"))])
+config.plugins.shootyourscreen.dummy = ConfigSelection(default = "1", choices = [("1", " ")])
 config.plugins.shootyourscreen.timeout = ConfigSelection(default = "5", choices = [("1", "1 sec"), ("3", "3 sec"), ("5", "5 sec"), ("10", "10 sec"), ("off", _("no message"))])
 
 def Plugins(**kwargs):
@@ -76,9 +78,10 @@ class getScreenshot(Screen):
 		eActionMap.getInstance().bindAction('', -0x7FFFFFFF, self.screenshotKey)
 
 	def screenshotKey(self, key, flag):
+		selectedbutton = int(config.plugins.shootyourscreen.buttonchoice.value)
 		if config.plugins.shootyourscreen.enable.value:
-			if key == 388:
-				if not config.plugins.shootyourscreen.switchtext.value:
+			if key == selectedbutton:
+				if not config.plugins.shootyourscreen.switchhelp.value:
 					if flag == 3:
 						self.previousflag = flag
 						self.grabScreenshot()
@@ -222,8 +225,36 @@ class ShootYourScreenConfig(Screen, ConfigListScreen):
 				self.list.append(getConfigListEntry(_("Quality of jpg picture :"), config.plugins.shootyourscreen.jpegquality))
 			self.list.append(getConfigListEntry(_("Picture size (width) :"), config.plugins.shootyourscreen.picturesize))
 			self.list.append(getConfigListEntry(_("Path for screenshots :"), config.plugins.shootyourscreen.path))
-			self.list.append(getConfigListEntry(_("Switch TEXT and TEXT long button :"), config.plugins.shootyourscreen.switchtext))
 			self.list.append(getConfigListEntry(_("Timeout for info message :"), config.plugins.shootyourscreen.timeout))
+			self.list.append(getConfigListEntry(_("Select a button to take a screenshot :"), config.plugins.shootyourscreen.buttonchoice))
+			check = config.plugins.shootyourscreen.buttonchoice.value
+			if check == "113":
+				buttonname = (_("Mute"))
+			elif check == "138":
+				buttonname = (_("Help"))
+			elif check == "167":
+				buttonname = (_("Record"))
+			elif check == "377":
+				buttonname = (_("TV"))
+			elif check == "395":
+				buttonname = (_("List"))
+			elif check == "388":
+				buttonname = (_("Text"))
+			elif check == "392":
+				buttonname = (_("Audio"))
+			elif check == "398":
+				buttonname = (_("Red"))
+			elif check == "399":
+				buttonname = (_("Green"))
+			elif check == "400":
+				buttonname = (_("Yellow"))
+			elif check == "401":
+				buttonname = (_("Blue"))
+			if check == '398' or check == '399' or check == '400' or check == '401':
+				self.list.append(getConfigListEntry(_("Only button ' ") + buttonname + _(" long ' can be used."), config.plugins.shootyourscreen.dummy))
+				config.plugins.shootyourscreen.switchhelp.setValue(0)
+			else:
+				self.list.append(getConfigListEntry(_("Use the ' ") + buttonname + _(" ' button instead of ' ") + buttonname + _(" long ' :"), config.plugins.shootyourscreen.switchhelp))
 
 	def changedEntry(self):
 		self.createConfigList()
@@ -264,11 +295,12 @@ class ShootYourScreenConfig(Screen, ConfigListScreen):
 		else:
 			print "[ShootYourScreen] Setting Configuration to defaults."
 			config.plugins.shootyourscreen.enable.setValue(1)
-			config.plugins.shootyourscreen.switchtext.setValue(1)
+			config.plugins.shootyourscreen.switchhelp.setValue(1)
 			config.plugins.shootyourscreen.path.setValue("/media/hdd")
-			config.plugins.shootyourscreen.pictureformat.setValue("bmp")
-			config.plugins.shootyourscreen.jpegquality.setValue("100")
+			config.plugins.shootyourscreen.pictureformat.setValue("jpg")
+			config.plugins.shootyourscreen.jpegquality.setValue("80")
 			config.plugins.shootyourscreen.picturetype.setValue("all")
 			config.plugins.shootyourscreen.picturesize.setValue("default")
-			config.plugins.shootyourscreen.timeout.setValue("5")
+			config.plugins.shootyourscreen.timeout.setValue("3")
+			config.plugins.shootyourscreen.buttonchoice.setValue("388")
 			self.save()
